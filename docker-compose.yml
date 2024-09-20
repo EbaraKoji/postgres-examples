@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15.2-alpine
+    container_name: postgres
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=pg_secret
+    volumes:
+      - db:/var/lib/postgresql/data
+    # networks:
+    #   - postgres
+
+  pgadmin:
+    image: dpage/pgadmin4:7.7
+    container_name: pgadmin4
+    ports:
+      - '443:443'
+    volumes:
+      - pgadmin4:/var/lib/pgadmin
+    environment:
+      # host: host.docker.internal
+      - PGADMIN_DEFAULT_EMAIL=user@example.com
+      - PGADMIN_DEFAULT_PASSWORD=pgadmin
+      - PGADMIN_LISTEN_PORT=443
+    depends_on:
+      - postgres
+    # networks:
+    #   - postgres
+
+volumes:
+  db:
+  pgadmin4:
+
+# networks:
+#   postgres:
