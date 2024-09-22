@@ -1,11 +1,12 @@
-import psycopg2
+import psycopg
 
-conn = psycopg2.connect(
+conn = psycopg.connect(
     host='localhost',
     port=5432,
     dbname='postgres',
     user='postgres',
     password='pg_secret',
+    cursor_factory=psycopg.ClientCursor  # https://stackoverflow.com/questions/78410960/psycopg3-mogrify-attributeerror-connection-object-has-no-attribute-mogrify
 )
 
 cur = conn.cursor()
@@ -39,6 +40,9 @@ sql = cur.mogrify(
     ('Next.js', 200),
 )
 print(sql)
+
+cur.execute(sql)
+print(cur.fetchall())
 
 conn.commit()
 

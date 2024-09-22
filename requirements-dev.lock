@@ -8,7 +8,13 @@
 #   with-sources: false
 
 -e file:.
+psycopg==3.2.2
+    # via postgres-examples
+psycopg-binary==3.2.2
+    # via psycopg
 psycopg2==2.9.9
     # via postgres-examples
 psycopg2-binary==2.9.9
     # via postgres-examples
+typing-extensions==4.12.2
+    # via psycopg
