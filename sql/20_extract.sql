@@ -1,0 +1,21 @@
+SELECT
+    EXTRACT(
+        YEAR
+        FROM
+            NOW()
+    ),
+    EXTRACT(
+        MONTH
+        FROM
+            NOW()
+    ),
+    EXTRACT(
+        DAY
+        FROM
+            NOW()
+    ),
+    EXTRACT(
+        CENTURY
+        FROM
+            NOW()
+    );
