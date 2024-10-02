@@ -3,7 +3,10 @@ from contextlib import asynccontextmanager
 
 from databases import Database
 
-database = Database('postgresql://postgres:pg_secret@localhost:5432/postgres')
+database = Database(
+    'postgresql://postgres:pg_secret@localhost:5432/postgres',
+    ssl=False,  # In remote this should be True, but PostgreSQL server at "localhost:5432" rejects SSL upgrade.
+)
 
 
 @asynccontextmanager
