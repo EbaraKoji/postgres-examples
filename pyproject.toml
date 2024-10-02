@@ -8,6 +8,8 @@ authors = [
 dependencies = [
     "psycopg[binary]>=3.2.2",
     "databases[asyncpg]>=0.9.0",
+    "sqlmodel>=0.0.22",
+    "greenlet>=3.1.1",
 ]
 readme = "README.md"
 requires-python = ">= 3.12"

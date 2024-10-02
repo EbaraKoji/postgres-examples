@@ -8,16 +8,29 @@
 #   with-sources: false
 
 -e file:.
+annotated-types==0.7.0
+    # via pydantic
 asyncpg==0.29.0
     # via databases
 databases==0.9.0
+    # via postgres-examples
+greenlet==3.1.1
     # via postgres-examples
 psycopg==3.2.2
     # via postgres-examples
 psycopg-binary==3.2.2
     # via psycopg
+pydantic==2.9.2
+    # via sqlmodel
+pydantic-core==2.23.4
+    # via pydantic
 sqlalchemy==2.0.35
     # via databases
+    # via sqlmodel
+sqlmodel==0.0.22
+    # via postgres-examples
 typing-extensions==4.12.2
     # via psycopg
+    # via pydantic
+    # via pydantic-core
     # via sqlalchemy
