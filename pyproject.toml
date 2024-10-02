@@ -6,8 +6,6 @@ authors = [
     { name = "EbaraKoji", email = "kojieva5270@gmail.com" }
 ]
 dependencies = [
-    "psycopg2>=2.9.9",
-    "psycopg2-binary>=2.9.9",
     "psycopg[binary]>=3.2.2",
 ]
 readme = "README.md"
