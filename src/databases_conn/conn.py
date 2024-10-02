@@ -16,11 +16,11 @@ async def get_db(db: Database):
     await db.disconnect()
 
 
+@get_db(database)
 async def main():
-    async with get_db(database) as db:
-        async with db.connection() as conn:
-            rows = await conn.fetch_all('SELECT * from book WHERE id = 1;')
-            print(dict(rows[0]))
+    async with database.connection() as conn:
+        rows = await conn.fetch_all('SELECT * from book WHERE id = 1;')
+        print(dict(rows[0]))
 
 
 if __name__ == '__main__':
