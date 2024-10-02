@@ -17,7 +17,7 @@ VALUES(999, 'Python in 7 days', 328, 'Ebara Koji');
 VALUES(1, 'Python in 7 days', 328, 'Ebara Koji');
 """)
         except BaseException as e:
-            print(f'Failed to execue query.\nError: {e}')
+            print(f'Failed to execute query.\nError: {e}')
             await tr.rollback()
         else:
             await tr.commit()
