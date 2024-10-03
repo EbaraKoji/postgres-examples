@@ -8,7 +8,7 @@ class Hero(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str
     secret_name: str = Field(index=True)
-    age: int | None = None
+    age: int | None = Field(default=None, index=True)
 
 
 my_hero = Hero(name='Spider-Boy', secret_name='Pedro Parqueador')
@@ -19,6 +19,7 @@ engine = create_async_engine(url, echo=True)
 
 async def main():
     async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.drop_all)
         await conn.run_sync(SQLModel.metadata.create_all)
 
 
