@@ -15,6 +15,14 @@ async def main():
         Hero(name='Deadpond', secret_name='Dive Wilson'),
         Hero(name='Spider-Boy', secret_name='Pedro Parqueador'),
         Hero(name='Rusty-Man', secret_name='Tommy Sharp', age=48),
+        Hero(name='Tarantula', secret_name='Natalia Roman-on', age=32),
+        Hero(name='Black Lion', secret_name='Trevor Challa', age=35),
+        Hero(name='Dr. Weird', secret_name='Steve Weird', age=36),
+        Hero(
+            name='Captain North America',
+            secret_name='Esteban Rogelios',
+            age=93,
+        ),
     ]
 
     async with AsyncSession(engine) as session:
