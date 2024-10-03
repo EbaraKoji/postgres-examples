@@ -1,7 +1,7 @@
 import asyncio
 
 from sqlalchemy.ext.asyncio import create_async_engine
-from sqlmodel import Field, SQLModel, select
+from sqlmodel import Field, SQLModel, select  # noqa F401
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 
@@ -25,8 +25,9 @@ async def main():
         )
 
     async with AsyncSession(engine) as session:
-        stmt = select(Book).where(Book.id == 1)
-        book = (await session.exec(stmt)).first()
+        # stmt = select(Book).where(Book.id == 1)
+        # book = (await session.exec(stmt)).first()
+        book = await session.get(Book, 1)
         print(book.title)
         await session.commit()
 
