@@ -13,9 +13,8 @@ class Book(SQLModel, table=True):
 
 
 # sync url 'postgresql://postgres:pg_secret@localhost:5432/postgres' needs psycopg2, not psycopg3!
-engine = create_async_engine(
-    'postgresql+asyncpg://postgres:pg_secret@localhost:5432/postgres'
-)
+url = 'postgresql+asyncpg://postgres:pg_secret@localhost:5432/postgres'
+engine = create_async_engine(url)
 
 
 async def main():
