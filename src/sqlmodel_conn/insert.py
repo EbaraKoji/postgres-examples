@@ -18,12 +18,29 @@ async def main():
     ]
 
     async with AsyncSession(engine) as session:
+        print('before adding heros')
+        pprint(heros)
+
         session.add_all(heros)
+        print('after adding heros')
+        pprint(heros)
+
         await session.commit()
+        print('after commiting heros')
+        pprint(heros)
+
+        for hero in heros:
+            await session.refresh(hero)
+        print('after refreshing heros')
+        pprint(heros)
+
         stmt = select(Hero)
         db_heros = (await session.exec(stmt)).all()
+        print('selecting heros')
         pprint(db_heros)
         await session.commit()
+    print('after closing session')
+    pprint(heros)
 
 
 if __name__ == '__main__':
