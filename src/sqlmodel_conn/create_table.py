@@ -11,7 +11,10 @@ class Team(SQLModel, table=True):
     name: str = Field(index=True)
     headquarters: str
 
-    heroes: list['Hero'] = Relationship(back_populates='team')
+    heroes: list['Hero'] = Relationship(
+        back_populates='team',
+        sa_relationship_kwargs={'lazy': 'selectin'},  # async eager load
+    )
 
 
 class Hero(SQLModel, table=True):
@@ -79,6 +82,19 @@ async def main():
         stmt = select(Hero).where(Hero.team_id == team_preventers.id)
         hero_preventers = (await session.exec(stmt)).first()
         pprint(hero_preventers)
+        await session.commit()
+
+        for hero in heroes:
+            await session.refresh(hero)
+        await session.refresh(team_preventers)
+        assert len(team_preventers.heroes) == 1
+        pprint(heroes[1])
+        team_preventers.heroes.append(heroes[1])
+        session.add(team_preventers)
+
+        await session.refresh(heroes[1])
+        assert len(team_preventers.heroes) == 2
+        pprint(heroes[1])
 
         stmt = select(Hero, Team).join(Team, isouter=True)
         results = await session.exec(stmt)
