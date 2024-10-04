@@ -1,9 +1,17 @@
 import asyncio
-from pprint import pprint
 
 from sqlalchemy.ext.asyncio import create_async_engine
-from sqlmodel import Field, Relationship, SQLModel, select
+from sqlmodel import Field, Relationship, SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
+
+
+class HeroTeamLink(SQLModel, table=True):
+    team_id: int | None = Field(
+        default=None, foreign_key='team.id', primary_key=True
+    )
+    hero_id: int | None = Field(
+        default=None, foreign_key='hero.id', primary_key=True
+    )
 
 
 class Team(SQLModel, table=True):
@@ -12,9 +20,9 @@ class Team(SQLModel, table=True):
     headquarters: str
 
     heroes: list['Hero'] = Relationship(
-        back_populates='team',
-        cascade_delete=True,
-        sa_relationship_kwargs={'lazy': 'selectin'},  # async eager load
+        back_populates='teams',
+        link_model=HeroTeamLink,
+        sa_relationship_kwargs={'lazy': 'selectin'},
     )
 
 
@@ -24,10 +32,12 @@ class Hero(SQLModel, table=True):
     secret_name: str = Field(index=True)
     age: int | None = Field(default=None, index=True)
 
-    team_id: int | None = Field(
-        default=None, foreign_key='team.id', ondelete='CASCADE'
+    team_id: int | None = Field(default=None, foreign_key='team.id')
+    teams: list[Team] = Relationship(
+        back_populates='heroes',
+        link_model=HeroTeamLink,
+        sa_relationship_kwargs={'lazy': 'selectin'},
     )
-    team: Team | None = Relationship(back_populates='heroes')
 
 
 url = 'postgresql+asyncpg://postgres:pg_secret@localhost:5432/postgres'
@@ -44,72 +54,38 @@ async def main():
         team_z_force = Team(
             name='Z-Force', headquarters="Sister Margaret's Bar"
         )
-        session.add(team_preventers)
-        session.add(team_z_force)
+
+        hero_deadpond = Hero(
+            name='Deadpond',
+            secret_name='Dive Wilson',
+            teams=[team_z_force, team_preventers],
+        )
+        hero_rusty_man = Hero(
+            name='Rusty-Man',
+            secret_name='Tommy Sharp',
+            age=48,
+            teams=[team_preventers],
+        )
+        hero_spider_boy = Hero(
+            name='Spider-Boy',
+            secret_name='Pedro Parqueador',
+            teams=[team_preventers],
+        )
+        session.add(hero_deadpond)
+        session.add(hero_rusty_man)
+        session.add(hero_spider_boy)
         await session.commit()
 
-        await session.refresh(team_preventers)
-        await session.refresh(team_z_force)
+        await session.refresh(hero_deadpond)
+        await session.refresh(hero_rusty_man)
+        await session.refresh(hero_spider_boy)
 
-        heroes = [
-            Hero(
-                name='Deadpond',
-                secret_name='Dive Wilson',
-                team_id=team_z_force.id,
-            ),
-            Hero(name='Spider-Boy', secret_name='Pedro Parqueador'),
-            Hero(
-                name='Rusty-Man',
-                secret_name='Tommy Sharp',
-                age=48,
-                team_id=team_preventers.id,
-            ),
-            Hero(name='Tarantula', secret_name='Natalia Roman-on', age=32),
-            Hero(name='Black Lion', secret_name='Trevor Challa', age=35),
-            Hero(name='Dr. Weird', secret_name='Steve Weird', age=36),
-            Hero(
-                name='Captain North America',
-                secret_name='Esteban Rogelios',
-                age=93,
-            ),
-        ]
-
-        session.add_all(heroes)
-        await session.commit()
-
-        for hero in heroes:
-            await session.refresh(hero)
-        pprint(heroes)
-
-        await session.refresh(team_preventers)
-        stmt = select(Hero).where(Hero.team_id == team_preventers.id)
-        hero_preventers = (await session.exec(stmt)).first()
-        pprint(hero_preventers)
-        await session.commit()
-
-        for hero in heroes:
-            await session.refresh(hero)
-        await session.refresh(team_preventers)
-        assert len(team_preventers.heroes) == 1
-        pprint(heroes[1])
-        team_preventers.heroes.append(heroes[1])
-        session.add(team_preventers)
-
-        await session.refresh(heroes[1])
-        assert len(team_preventers.heroes) == 2
-        pprint(heroes[1])
-
-        for hero in heroes:
-            await session.refresh(hero)
-        await session.refresh(team_z_force)
-        team_z_force_id = team_z_force.id
-        stmt = select(Hero).where(Hero.team_id == team_z_force_id)
-        z_force_heroes = (await session.exec(stmt)).all()
-        pprint(z_force_heroes)
-        await session.delete(team_z_force)
-
-        z_force_heroes = (await session.exec(stmt)).all()
-        pprint(z_force_heroes)
+        print('Deadpond:', hero_deadpond)
+        print('Deadpond teams:', hero_deadpond.teams)
+        print('Rusty-Man:', hero_rusty_man)
+        print('Rusty-Man Teams:', hero_rusty_man.teams)
+        print('Spider-Boy:', hero_spider_boy)
+        print('Spider-Boy Teams:', hero_spider_boy.teams)
 
 
 if __name__ == '__main__':
