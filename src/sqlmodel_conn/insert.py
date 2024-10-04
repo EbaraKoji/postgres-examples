@@ -11,7 +11,7 @@ async def main():
         await conn.run_sync(SQLModel.metadata.drop_all)
         await conn.run_sync(SQLModel.metadata.create_all)
 
-    heros = [
+    heroes = [
         Hero(name='Deadpond', secret_name='Dive Wilson'),
         Hero(name='Spider-Boy', secret_name='Pedro Parqueador'),
         Hero(name='Rusty-Man', secret_name='Tommy Sharp', age=48),
@@ -26,29 +26,29 @@ async def main():
     ]
 
     async with AsyncSession(engine) as session:
-        print('before adding heros')
-        pprint(heros)
+        print('before adding heroes')
+        pprint(heroes)
 
-        session.add_all(heros)
-        print('after adding heros')
-        pprint(heros)
+        session.add_all(heroes)
+        print('after adding heroes')
+        pprint(heroes)
 
         await session.commit()
-        print('after commiting heros')
-        pprint(heros)
+        print('after commiting heroes')
+        pprint(heroes)
 
-        for hero in heros:
+        for hero in heroes:
             await session.refresh(hero)
-        print('after refreshing heros')
-        pprint(heros)
+        print('after refreshing heroes')
+        pprint(heroes)
 
         stmt = select(Hero)
-        db_heros = (await session.exec(stmt)).all()
-        print('selecting heros')
-        pprint(db_heros)
+        db_heroes = (await session.exec(stmt)).all()
+        print('selecting heroes')
+        pprint(db_heroes)
         await session.commit()
     print('after closing session')
-    pprint(heros)
+    pprint(heroes)
 
 
 if __name__ == '__main__':

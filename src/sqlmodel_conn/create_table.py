@@ -45,7 +45,7 @@ async def main():
         await session.refresh(team_preventers)
         await session.refresh(team_z_force)
 
-        heros = [
+        heroes = [
             Hero(
                 name='Deadpond',
                 secret_name='Dive Wilson',
@@ -68,12 +68,12 @@ async def main():
             ),
         ]
 
-        session.add_all(heros)
+        session.add_all(heroes)
         await session.commit()
 
-        for hero in heros:
+        for hero in heroes:
             await session.refresh(hero)
-        pprint(heros)
+        pprint(heroes)
 
         await session.refresh(team_preventers)
         stmt = select(Hero).where(Hero.team_id == team_preventers.id)
