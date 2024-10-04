@@ -1,7 +1,7 @@
 import asyncio
 
 from sqlalchemy.ext.asyncio import create_async_engine
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship, SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 
@@ -13,17 +13,17 @@ class HeroTeamLink(SQLModel, table=True):
         default=None, foreign_key='hero.id', primary_key=True
     )
 
+    is_training: bool = False
+    team: 'Team' = Relationship(back_populates='hero_links')
+    hero: 'Hero' = Relationship(back_populates='team_links')
+
 
 class Team(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(index=True)
     headquarters: str
 
-    heroes: list['Hero'] = Relationship(
-        back_populates='teams',
-        link_model=HeroTeamLink,
-        sa_relationship_kwargs={'lazy': 'selectin'},
-    )
+    hero_links: list[HeroTeamLink] = Relationship(back_populates='team')
 
 
 class Hero(SQLModel, table=True):
@@ -32,12 +32,7 @@ class Hero(SQLModel, table=True):
     secret_name: str = Field(index=True)
     age: int | None = Field(default=None, index=True)
 
-    team_id: int | None = Field(default=None, foreign_key='team.id')
-    teams: list[Team] = Relationship(
-        back_populates='heroes',
-        link_model=HeroTeamLink,
-        sa_relationship_kwargs={'lazy': 'selectin'},
-    )
+    team_links: list[HeroTeamLink] = Relationship(back_populates='hero')
 
 
 url = 'postgresql+asyncpg://postgres:pg_secret@localhost:5432/postgres'
@@ -58,34 +53,46 @@ async def main():
         hero_deadpond = Hero(
             name='Deadpond',
             secret_name='Dive Wilson',
-            teams=[team_z_force, team_preventers],
         )
         hero_rusty_man = Hero(
             name='Rusty-Man',
             secret_name='Tommy Sharp',
             age=48,
-            teams=[team_preventers],
         )
         hero_spider_boy = Hero(
             name='Spider-Boy',
             secret_name='Pedro Parqueador',
-            teams=[team_preventers],
         )
-        session.add(hero_deadpond)
-        session.add(hero_rusty_man)
-        session.add(hero_spider_boy)
-        await session.commit()
+        deadpond_team_z_link = HeroTeamLink(
+            team=team_z_force, hero=hero_deadpond
+        )
+        deadpond_preventers_link = HeroTeamLink(
+            team=team_preventers, hero=hero_deadpond, is_training=True
+        )
+        spider_boy_preventers_link = HeroTeamLink(
+            team=team_preventers, hero=hero_spider_boy, is_training=True
+        )
+        rusty_man_preventers_link = HeroTeamLink(
+            team=team_preventers, hero=hero_rusty_man
+        )
 
-        await session.refresh(hero_deadpond)
-        await session.refresh(hero_rusty_man)
-        await session.refresh(hero_spider_boy)
+        session.add(deadpond_team_z_link)
+        session.add(deadpond_preventers_link)
+        session.add(spider_boy_preventers_link)
+        session.add(rusty_man_preventers_link)
 
-        print('Deadpond:', hero_deadpond)
-        print('Deadpond teams:', hero_deadpond.teams)
-        print('Rusty-Man:', hero_rusty_man)
-        print('Rusty-Man Teams:', hero_rusty_man.teams)
-        print('Spider-Boy:', hero_spider_boy)
-        print('Spider-Boy Teams:', hero_spider_boy.teams)
+        stmt = select(HeroTeamLink).join(Team).join(Hero)
+        hero_links = (await session.exec(stmt)).all()
+
+        for link in hero_links:
+            print(
+                'team: ',
+                link.team.name,
+                'hero: ',
+                link.hero.name,
+                'is_training: ',
+                link.is_training,
+            )
 
 
 if __name__ == '__main__':
