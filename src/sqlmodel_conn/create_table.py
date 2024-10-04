@@ -13,6 +13,7 @@ class Team(SQLModel, table=True):
 
     heroes: list['Hero'] = Relationship(
         back_populates='team',
+        cascade_delete=True,
         sa_relationship_kwargs={'lazy': 'selectin'},  # async eager load
     )
 
@@ -23,12 +24,14 @@ class Hero(SQLModel, table=True):
     secret_name: str = Field(index=True)
     age: int | None = Field(default=None, index=True)
 
-    team_id: int | None = Field(default=None, foreign_key='team.id')
+    team_id: int | None = Field(
+        default=None, foreign_key='team.id', ondelete='CASCADE'
+    )
     team: Team | None = Relationship(back_populates='heroes')
 
 
 url = 'postgresql+asyncpg://postgres:pg_secret@localhost:5432/postgres'
-engine = create_async_engine(url, echo=True)
+engine = create_async_engine(url, echo=False)
 
 
 async def main():
@@ -96,10 +99,17 @@ async def main():
         assert len(team_preventers.heroes) == 2
         pprint(heroes[1])
 
-        stmt = select(Hero, Team).join(Team, isouter=True)
-        results = await session.exec(stmt)
-        for hero, team in results:
-            print('Hero:', hero.name, 'Team:', team.name if team else None)
+        for hero in heroes:
+            await session.refresh(hero)
+        await session.refresh(team_z_force)
+        team_z_force_id = team_z_force.id
+        stmt = select(Hero).where(Hero.team_id == team_z_force_id)
+        z_force_heroes = (await session.exec(stmt)).all()
+        pprint(z_force_heroes)
+        await session.delete(team_z_force)
+
+        z_force_heroes = (await session.exec(stmt)).all()
+        pprint(z_force_heroes)
 
 
 if __name__ == '__main__':
